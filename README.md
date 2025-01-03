@@ -1,3 +1,7 @@
+
+# SNN_Junyi
+For the collaboration of Junyi's SNN project.
+
 Code includes computing thresholds for latency T=1 and calibrating the converted SNN model.
 
 All the models are trained using PyTorch Framework.
@@ -30,3 +34,4 @@ For t=1, it trains an SNN model intialized with the weights of ANN model.
 For t>1, it trains an SNN model intialized with the weights of SNN model with latency t-1. 
 For t>1, 20 epochs are enough.
 
+=======
