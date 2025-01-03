@@ -6,7 +6,7 @@ from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 import torch.utils.data as data
 from Preprocess.augment import Cutout, CIFAR10Policy
-from Preprocess.cifar10_dvs import CIFAR10DVS
+# from Preprocess.cifar10_dvs import CIFAR10DVS
 from PIL import Image, ImageEnhance, ImageOps
 import random
 import numpy as np
@@ -58,7 +58,7 @@ class SubPolicy(object):
             "translateY": np.linspace(0, 150 / 331, 10),
             "rotate": np.linspace(0, 30, 10),
             "color": np.linspace(0.0, 0.9, 10),
-            "posterize": np.round(np.linspace(8, 4, 10), 0).astype(np.int),
+            "posterize": np.round(np.linspace(8, 4, 10), 0).astype(np.int32),
             "solarize": np.linspace(256, 0, 10),
             "contrast": np.linspace(0.0, 0.9, 10),
             "sharpness": np.linspace(0.0, 0.9, 10),

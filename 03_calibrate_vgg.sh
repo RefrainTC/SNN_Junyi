@@ -1,0 +1,1 @@
+python3 train_snn_converted.py --model vgg16 --dataset cifar10 --t 1 --epochs 50 --lr 0.001

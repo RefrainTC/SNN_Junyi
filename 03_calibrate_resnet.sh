@@ -1,0 +1,1 @@
+python3 train_snn_converted.py --model resnet18 --dataset cifar10 --t 1 --epochs 50 --checkpoint ./saved_models

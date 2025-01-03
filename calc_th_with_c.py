@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from ctypes import *
 from numpy.ctypeslib import ndpointer
 import time
-mylib = CDLL('/home/srinivas.anumasa/snn_optimal_conversion_pipeline/test.so')
+mylib = CDLL('./test.so')
 ND_POINTER_1 = np.ctypeslib.ndpointer(dtype=np.float64, 
                                       ndim=1,
                                       flags="C")

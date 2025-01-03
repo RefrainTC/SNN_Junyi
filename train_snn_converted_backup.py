@@ -77,38 +77,17 @@ counter = 0
 
 
 
-# def replace_activation_by_spike(model):
-#     global counter
-#     for name, module in model._modules.items():
-#         if hasattr(module,"_modules"):
-#             model._modules[name] = replace_activation_by_spike(module)
-#         if isActivation(module.__class__.__name__.lower()):
-#             #*(1.0-(counter)*1.0/thresholds.shape[0]))
-#             thresholds[counter,n_steps:] = thresholds1[counter,1]/n_steps#thresholds_out_sum/n_steps# thresholds1[counter,1]/n_steps
-#             thresholds[counter,:n_steps] = thresholds1[counter,0]/n_steps#thresholds_inner_sum/n_steps#thresholds1[counter,0]/n_steps
-#             model._modules[name] = SPIKE_layer(thresholds[counter,n_steps:],thresholds[counter,0:n_steps])
-            
-#             counter += 1
-#     return model
-
 def replace_activation_by_spike(model):
     global counter
     for name, module in model._modules.items():
         if hasattr(module,"_modules"):
             model._modules[name] = replace_activation_by_spike(module)
         if isActivation(module.__class__.__name__.lower()):
-            # 确保阈值维度正确
-            thresh_out = thresholds1[counter,1]/n_steps
-            thresh_in = thresholds1[counter,0]/n_steps
+            #*(1.0-(counter)*1.0/thresholds.shape[0]))
+            thresholds[counter,n_steps:] = thresholds1[counter,1]/n_steps#thresholds_out_sum/n_steps# thresholds1[counter,1]/n_steps
+            thresholds[counter,:n_steps] = thresholds1[counter,0]/n_steps#thresholds_inner_sum/n_steps#thresholds1[counter,0]/n_steps
+            model._modules[name] = SPIKE_layer(thresholds[counter,n_steps:],thresholds[counter,0:n_steps])
             
-            # 扩展阈值到需要的时间步长
-            thresholds[counter,n_steps:] = thresh_out
-            thresholds[counter,:n_steps] = thresh_in
-            
-            print(f"Layer {counter}: thresh_in={thresh_in}, thresh_out={thresh_out}")
-            
-            model._modules[name] = SPIKE_layer(thresholds[counter,:n_steps],
-                                             thresholds[counter,n_steps:])
             counter += 1
     return model
 
@@ -163,29 +142,21 @@ def test_snn(model):
         test_loss.append(loss/total)
         test_acc.append(100 * correct / total)
     return 100 * correct / total
-def train_snn(train_dataloader, test_dataloader, model, epochs, device, loss_fn, lr=0.001, wd=5e-4, save=None, parallel=False, rank=0):
+def train_snn(train_dataloader, test_dataloader, model, epochs, device, loss_fn, lr=0.1, wd=5e-4, save=None, parallel=False, rank=0):
     model.cuda(device)
     
-    # optimizer = torch.optim.SGD(model.parameters(), lr=lr,momentum=0.9,weight_decay=wd) 
+    optimizer = torch.optim.SGD(model.parameters(), lr=lr,momentum=0.9,weight_decay=wd) 
     #optimizer = torch.optim.RMSprop(model.parameters(), lr=lr,momentum=0.9,weight_decay=wd) 
    
     para1, para2, para3 = regular_set(model)
     
-    # optimizer = torch.optim.SGD([
-    #                             {'params': para1, 'weight_decay': wd}, 
-    #                             {'params': para2, 'weight_decay': wd}, 
-    #                             {'params': para3, 'weight_decay': wd}
-    #                             ],
-    #                             lr=lr, 
-    #                              momentum=0.9)
-
-    optimizer = torch.optim.Adam([
-        {'params': para1, 'weight_decay': wd}, 
-        {'params': para2, 'weight_decay': wd}, 
-        {'params': para3, 'weight_decay': wd}
-    ], lr=lr)
-
-
+    optimizer = torch.optim.SGD([
+                                {'params': para1, 'weight_decay': wd}, 
+                                {'params': para2, 'weight_decay': wd}, 
+                                {'params': para3, 'weight_decay': wd}
+                                ],
+                                lr=lr, 
+                                 momentum=0.9)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs,verbose=True)
     # scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, 
     #                     milestones=[100], # List of epoch indices
@@ -232,7 +203,6 @@ def train_snn(train_dataloader, test_dataloader, model, epochs, device, loss_fn,
                 
                 loss = 0.9*loss + 0.1*MMDLoss(outputs,y)
             #print(loss.item()
-
             with torch.autograd.set_detect_anomaly(True):
                 loss.backward()
                 optimizer.step()
@@ -248,8 +218,8 @@ def train_snn(train_dataloader, test_dataloader, model, epochs, device, loss_fn,
             #print(predicted)
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
-            # if total%(256*8) == 0:
-                # print('Epoch:%d, Accuracy of the snn network on the %d train images: %f, loss:%f'%(epoch,total,100 * correct / total,epoch_loss/total))
+            if total%(256*8) == 0:
+                print('Epoch:%d, Accuracy of the snn network on the %d train images: %f, loss:%f'%(epoch,total,100 * correct / total,epoch_loss/total))
                 #exit()
         print('Epoch:%d, Accuracy of the snn network on the %d train images: %f, loss:%f'%(epoch,total,100 * correct / total,epoch_loss/total))
         scheduler.step()

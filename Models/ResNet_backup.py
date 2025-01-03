@@ -148,57 +148,126 @@ class ResNet(nn.Module):
             self.in_channels = out_channels * block.expansion
         return nn.Sequential(*layers)
 
-    def forward(self, x, thresholds=0, L=0, t=0):
+    def forward(self, x,thresholds=0,L=0,t=0):
         out = x
         counter = 0
-        # Process the first convolutional block
         for i in range(len(self.conv1)):
             if 'SPIKE_layer' in str(self.conv1[i]):
-                out = self.conv1[i](out, t)  # Pass the time parameter to SPIKE layers
+                out = self.conv1[i](out,t)
             else:
-                out = self.conv1[i](out)  # Regular layers without time parameter
+                out = self.conv1[i](out)
+            #print(i,out.sum())
+            #if i==1:
+                #return out
             if 'SPIKE_layer' in str(self.conv1[i]):
+                #print("spike",counter,out.sum())
                 counter += 1    
-                if counter == L:  # Stop processing if the layer limit L is reached
+                if counter == L:
                     return out
             if 'ReLU' in str(self.conv1[i]):
+                #print("relu",counter,out.sum())
                 counter += 1    
-                if counter == L:  # Stop processing if the layer limit L is reached
+                if counter == L:
                     return out
-                    
-        # Process residual blocks
         for i in range(len(self.conv2_x)):
-            out, counter, found = self.conv2_x[i](out, counter, L, t)
-            if found:  # Exit if the target layer is found
+            out,counter,found = self.conv2_x[i](out,counter,L,t)
+            if found:
                 return out
         for i in range(len(self.conv3_x)):
-            out, counter, found = self.conv3_x[i](out, counter, L, t)
-            if found:  # Exit if the target layer is found
+            out,counter,found = self.conv3_x[i](out,counter,L,t)
+            if found:
                 return out
         for i in range(len(self.conv4_x)):
-            out, counter, found = self.conv4_x[i](out, counter, L, t)
-            if found:  # Exit if the target layer is found
+            out,counter,found = self.conv4_x[i](out,counter,L,t)
+            if found:
                 return out
         for i in range(len(self.conv5_x)):
-            out, counter, found = self.conv5_x[i](out, counter, L, t)
-            if found:  # Exit if the target layer is found
+            out,counter,found = self.conv5_x[i](out,counter,L,t)
+            if found:
                 return out
-                
-        # Global average pooling
         out = self.avg_pool(out)
         
-        # Handle dimension adjustments
-        if len(out.shape) == 5:  # Input with time dimension [batch, time, channels, h, w]
-            out = out.view(out.size(0), out.size(1), -1)  # Preserve time dimension [batch, time, channels]
-        elif len(out.shape) == 4:  # Standard 4D input [batch, channels, h, w]
-            out = out.view(out.size(0), -1)  # Flatten to [batch, channels]
+        if out.shape[-1]==1:
+            out = out.view(out.size(0), -1)
+        else:
+            out = out.view(out.size(0), out.size(1),out.size(-1))
         
-        # Fully connected layer
         out = self.fc(out)
         return out
-
-
-
+        '''
+            #print(i,out.sum())
+            #if i==1:
+                #return out
+            if 'LIFSpike' in str(self.conv2_x[i]):
+                print("spike",counter,out.sum())
+                counter += 1    
+                if counter == L:
+                    return out
+            if 'ReLU' in str(self.conv2_x[i]):
+                print("relu",counter,out.sum())
+                counter += 1    
+                if counter == L:
+                    return out
+        for i in range(len(self.conv3_x)):
+            out = self.conv3_x[i](out)
+            #print(i,out.sum())
+            #if i==1:
+                #return out
+            if 'LIFSpike' in str(self.conv3_x[i]):
+                print("spike",counter,out.sum())
+                counter += 1    
+                if counter == L:
+                    return out
+            if 'ReLU' in str(self.conv3_x[i]):
+                print("relu",counter,out.sum())
+                counter += 1    
+                if counter == L:
+                    return out
+        for i in range(len(self.conv4_x)):
+            out = self.conv4_x[i](out)
+            #print(i,out.sum())
+            #if i==1:
+                #return out
+            if 'LIFSpike' in str(self.conv4_x[i]):
+                print("spike",counter,out.sum())
+                counter += 1    
+                if counter == L:
+                    return out
+            if 'ReLU' in str(self.conv4_x[i]):
+                print("relprint("relu"u",counter,out.sum())
+                counter += 1    
+                if counter == L:
+                    return out
+        #print(self.conv5_x,len(self.conv5_x[0].residual_function))
+        print(self.conv5_x[0](out,counter).shape)
+        print(self.conv5_x[0],'dkdfklfbl;',self.conv5_x[1],'hai')
+        for i in range(len(self.conv5_x)):
+            out = self.conv5_x[i](out)
+            #print(i,out.sum())
+            #if i==1:
+                #return out
+            if 'LIFSpike' in str(self.conv5_x[i]):
+                print("spike",counter,out.sum())
+                counter += 1    
+                if counter == L:
+                    return out
+            if 'ReLU' in str(self.conv5_x[i]):
+                print("relu",counter,out.sum())
+                counter += 1    
+                if counter == L:
+                    return out
+        
+        
+        out = self.avg_pool(out)
+        
+        if out.shape[-1]==1:
+            out = out.view(out.size(0), -1)
+        else:
+            out = out.view(out.size(0), out.size(1),out.size(-1))
+        
+        out = self.fc(out)
+        return out
+        '''
 class ResNet4Cifar(nn.Module):
     def __init__(self, block, num_block, num_classes=10):
         super().__init__()

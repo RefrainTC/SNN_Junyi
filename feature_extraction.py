@@ -86,7 +86,7 @@ def extract_features(L=2):
         
         for i in range(args.iter):
             th_pos = ft.optimize1(features,th_pos)
-            print("Error after iteration ",i," is ",ft.error(features, th_pos))
+            # print("Error after iteration ",i," is ",ft.error(features, th_pos))
         
         thresholds_pos_all[L-1] = np.array(th_pos)
         thrs_in_list, thrs_out_list = ft.thrs_in_out(features, th_pos)

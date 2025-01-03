@@ -1,0 +1,19 @@
+datasets
+saved_models
+saved_models_2
+saved_models_backup
+cifar10_Images.npy
+
+
+# 忽略模型检查点
+checkpoints/
+*.ckpt
+*.pth
+*.h5
+*.weights
+*.pb
+
+# 常见的其他需要忽略的文件
+__pycache__/
+*.pyc
+.DS_Store
